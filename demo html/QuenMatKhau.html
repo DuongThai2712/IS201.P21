@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
+  <title>Quên mật khẩu</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #e0e0e0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 100px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+      text-shadow: 1px 1px 2px #999;
+    }
+
+    .form-box {
+      width: 700px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    .form-header {
+      background-color: #e0b44d;
+      padding: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-body {
+        padding: 20px 16px 20px 16px; /* tạo khoảng cách đều như ảnh */
+        }
+
+        input[type="text"] {
+        width: 100%;
+        padding: 10px 0;
+        margin-bottom: 20px;
+        font-size: 16px;
+        border: none;
+        border-bottom: 1px solid #ccc;
+        background-color: transparent;
+        outline: none;
+        }
+
+
+
+    .submit-btn {
+    background-color: #e57373;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 2px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .submit-btn:hover {
+      background-color: #d9534f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HỆ THỐNG PHÂN CÔNG VÀ QUẢN LÝ TOUR</h1>
+
+    <div class="form-box">
+      <div class="form-header">Nhập thông tin</div>
+      <div class="form-body">
+        <form id="resetForm">
+          <label for="username">Tên đăng nhập:</label>
+          <input type="text" id="username" name="username">
+
+          <label for="hoten">Họ tên nhân sự:</label>
+          <input type="text" id="hoten" name="hoten">
+
+          <label for="manv">Mã nhân sự:</label>
+          <input type="text" id="manv" name="manv">
+
+          <label for="sdt">Số điện thoại:</label>
+          <input type="text" id="sdt" name="sdt">
+
+          <div style="text-align: right;">
+            <button type="submit" class="submit-btn">Xác nhận</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("resetForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const hoten = document.getElementById("hoten").value.trim();
+      const manv = document.getElementById("manv").value.trim();
+      const sdt = document.getElementById("sdt").value.trim();
+
+      if (
+        username === "NS12345" &&
+        hoten === "Nguyễn Văn A" &&
+        manv === "NS001" &&
+        sdt === "0123456789"
+      ) {
+        window.location.href = "DoiMatKhau.html";
+      } else {
+        alert("Không tìm thấy tài khoản. Vui lòng nhập lại.");
+        window.location.reload();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đổi mật khẩu</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #e0e0e0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 100px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #999;
+    }
+
+    .box {
+      width: 700px;
+      background-color: white;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .header {
+      background-color: #e0b44d;
+      padding: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .form-body {
+      padding: 20px 16px 20px 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 0;
+      margin-bottom: 20px;
+      font-size: 16px;
+      border: none;
+      border-bottom: 1px solid #ccc;
+      background-color: transparent;
+      outline: none;
+    }
+
+    .submit-wrapper {
+      text-align: right;
+    }
+
+    .submit-btn {
+      background-color: #e57373;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 2px;
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .submit-btn:hover {
+      background-color: #d9534f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HỆ THỐNG PHÂN CÔNG VÀ QUẢN LÝ TOUR</h1>
+
+    <div class="box">
+      <div class="header">Đổi mật khẩu</div>
+      <div class="form-body">
+        <form id="changePasswordForm">
+          <label for="newPassword">Nhập mật khẩu mới:</label>
+          <input type="password" id="newPassword" name="newPassword" required>
+
+          <label for="confirmPassword">Nhập lại mật khẩu mới:</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+
+          <label for="otp">Nhập mã xác thực (được gửi về SĐT):</label>
+          <input type="text" id="otp" name="otp" required>
+
+          <div class="submit-wrapper">
+            <button type="submit" class="submit-btn">Xác nhận</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+<script>
+  document.getElementById("changePasswordForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const password = document.getElementById("newPassword").value.trim();
+    const confirm = document.getElementById("confirmPassword").value.trim();
+    const otp = document.getElementById("otp").value.trim();
+
+    if (password !== confirm) {
+      alert("Mật khẩu nhập lại không khớp. Vui lòng kiểm tra lại.");
+      return;
+    }
+
+    if (otp !== "1111") {
+      alert("Mã xác thực không đúng. Vui lòng kiểm tra lại.");
+      return;
+    }
+
+    // Nếu tất cả hợp lệ
+    alert("Đã đổi mật khẩu thành công!");
+    window.location.href = "DangNhap.html";
+  });
+</script>
+

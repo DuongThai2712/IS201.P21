@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý lịch phân công</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter';
+      font-size: 14px;
+      font-weight: regular;
+    }
+    body {
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .topbar {
+      background-color: #deb85f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      font-weight: regular;
+    }
+    .topbar .right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      position: relative;
+    }
+    .dropdown-toggle {
+      cursor: pointer;
+      position: relative;
+    }
+    .dropdown-toggle:hover #dropdownMenu {
+      display: flex;
+    }
+    .dropdown-menu {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background-color: white;
+      border: 1px solid #ccc;
+      width: 160px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    .dropdown-menu div {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .dropdown-menu div:hover {
+      background-color: #eee;
+    }
+    .container {
+      display: flex;
+    }
+    .sidebar {
+      width: 240px;
+      background-color: white;
+      height: calc(100vh - 50px);
+      padding-top: 10px;
+      border-right: 1px solid #ddd;
+    }
+    .sidebar .profile {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .sidebar .profile i {
+      font-size: 50px;
+    }
+    .sidebar .profile .name {
+      font-weight: bold;
+    }
+    .sidebar .profile .role {
+      font-size: 13px;
+      color: #666;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .menu-item:hover, .menu-item.active {
+      background-color: #eee;
+    }
+    .menu-item i {
+      margin-right: 10px;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+    .notification {
+      position: fixed;
+      top: 60px;
+      text-align: right;
+      right: 20px;
+      padding: 12px 12px;
+      font-weight: bold;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 9999;
+      animation: slideDown 0.5s ease-out;
+      max-width: 400px;
+    }
+    .notification.success {
+      background-color: #4caf50;
+      color: white;
+    }
+    .notification.error {
+      background-color: #e53935;
+      color: white;
+    }
+    .notification.hidden {
+      display: none;
+    }
+    .notification .close-btn {
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .dashboard {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background-color: white;
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card i {
+      background-color: #deb85f;
+      padding: 10px;
+      border-radius: 50%;
+      color: black;
+    }
+    .card .text {
+      font-size: 14px;
+    }
+    .card .text a {
+      font-weight: bold;
+      color: black;
+      text-decoration: none;
+    }
+    .card .text a:hover {
+      text-decoration: underline;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-gap: 20px;
+    }
+    .section {
+      border-radius: 4px;
+      padding: 10px 15px;
+      margin-bottom: 0px;
+    }
+    .section h3 {
+      padding: 10px;
+      margin: -10px -15px 10px -15px;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #addForm {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 700px;
+      text-align: center;
+    }
+    #addForm h3 {
+      text-align: center;
+      background-color: #deb85f;
+      color: black;
+      margin: -20px -20px 20px -20px;
+      padding: 10px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    #addForm .drop-zone {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    #addForm .drop-zone.dragover {
+      background-color: #e1e1e1;
+      border-color: #999;
+    }
+    #addForm button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #addForm .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #addForm button[type="submit"] {
+      background-color: #5E79E5;
+      color: white;
+    }
+    #addForm button[type="button"] {
+      background-color: #E55E5E;
+      color: white;
+    }
+    #detailForm {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 700px;
+    }
+    #detailForm h3 {
+      text-align: center;
+      background-color: #deb85f;
+      color: black;
+      margin: -20px -20px 20px -20px;
+      padding: 10px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    #detailForm .tour-selection {
+      margin-bottom: 10px;
+    }
+    #detailForm label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    #detailForm input, #detailForm textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    #detailForm .staff-input {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #detailForm button {
+      padding: 8px 15px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #detailForm button[type="button"] {
+      background-color: #E55E5E;
+      color: white;
+    }
+    #detailForm button[type="submit"] {
+      background-color: #5E79E5;
+      color: white;
+    }
+    #selectTourForm {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1001;
+      width: 700px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    #selectTourForm h3 {
+      text-align: center;
+      background-color: #deb85f;
+      color: black;
+      margin: -20px -20px 20px -20px;
+      padding: 10px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    #selectTourForm table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    #selectTourForm th, #selectTourForm td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    #selectTourForm th {
+      background-color: #deb85f;
+    }
+    #selectTourForm .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    #selectTourForm button[type="button"] {
+      background-color: #E55E5E;
+      color: white;
+      padding: 8px 15px;
+        border: none;
+    }
+    #selectTourForm button[type="submit"] {
+        padding: 8px 15px;
+      background-color: #5E79E5;
+      color: white;
+        border: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #ddd;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    table th {
+      background-color: #deb85f;
+    }
+    .search-bar {
+      display: flex;
+      width: 100%;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      padding: 5px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      height: 40px;
+    }
+    .search-bar button {
+      padding: 5px 10px;
+      background-color: #deb85f;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    @keyframes slideDown {
+      from { top: 20px; opacity: 0; }
+      to { top: 60px; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div><b>Hệ thống quản lý và phân công Tour</b></div>
+    <div class="right">
+      <div>Welcome back, <b>Đỗ Bạch Diễm Uyên</b></div>
+      <i class="material-icons">notifications</i>
+      <i class="material-icons">settings</i>
+      <div class="dropdown-toggle">
+        <i class="material-icons">account_circle</i>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <div onclick="alert('Xem nhật ký sử dụng')">Nhật ký sử dụng</div>
+          <div onclick="alert('Chuyển đến đổi mật khẩu')">Đổi mật khẩu</div>
+          <div onclick="alert('Đã đăng xuất');window.location.href='DangNhap.html'">Đăng xuất</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification hidden" id="alertBox">
+    <div style="display: flex; flex-direction: column;">
+      <div><b>Thông báo:</b></div>
+      <div id="alertMessage"></div>
+    </div>
+    <span class="close-btn" onclick="closeAlert()">×</span>
+  </div>
+
+  <div class="container">
+    <div class="sidebar">
+      <div class="profile">
+        <i class="material-icons">account_circle</i>
+        <div class="name">Đỗ Bạch Diễm Uyên</div>
+        <div class="role">Phòng Điều hành</div>
+      </div>
+      <div class="menu-item" onclick="window.location.href='TrangChu.html'"><i class="material-icons">home</i>Trang chủ</div>
+      <div class="menu-item" onclick="window.location.href='QuanLyTour.html'"><i class="material-icons">tour</i>Quản lý Tour</div>
+      <div class="menu-item" onclick="window.location.href='DatTour.html'"><i class="material-icons">receipt</i>Quản lý thông tin đặt Tour</div>
+      <div class="menu-item active" onclick="window.location.href='LichPhanCong.html'"><i class="material-icons">calendar_today</i>Quản lý lịch phân công</div>
+      <div class="menu-item" onclick="window.location.href='NhanSu.html'"><i class="material-icons">groups</i>Quản lý nhân sự</div>
+      <div class="menu-item" onclick="window.location.href='KhachHang.html'"><i class="material-icons">person</i>Quản lý khách hàng</div>
+      <div class="menu-item" onclick="window.location.href='ThamGiaTour.html'"><i class="material-icons">schedule</i>Đăng ký tham gia Tour</div>
+      <div class="menu-item" onclick="window.location.href='BaoCao.html'"><i class="material-icons">money</i>Báo cáo doanh thu</div>
+      <div class="menu-item" onclick="window.location.href='KhaoSat.html'"><i class="material-icons">poll</i>Quản lý khảo sát</div>
+      <div class="menu-item" onclick="window.location.href='HoatDong.html'"><i class="material-icons">event</i>Hoạt động và chương trình</div>
+    </div>
+
+    <div class="main">
+      <div class="section">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Tìm kiếm...">
+          <button class="search-icon" onclick="searchSchedule()"><i class="material-icons">search</i></button>
+        </div>
+        <h3><span>Danh sách lịch phân công</span>
+          <div>
+            <button style="background-color: #5E79E5; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; height: 40px; width: 100px;" onclick="showAddForm()">+ Thêm</button>
+          </div>
+        </h3>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th>Mã lịch</th>
+              <th>Tên Tour</th>
+              <th>Ngày bắt đầu</th>
+              <th>Ngày kết thúc</th>
+              <th>Số lượng nhân sự</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleList">
+            <!-- Data will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="addForm">
+  <h3>Thêm lịch phân công</h3>
+  <div class="drop-zone" id="dropZone">
+    <i class="material-icons" style="font-size: 36px; color: #666;">cloud_upload</i>
+    <p id="fileNameDetail">Kéo thả file lịch phân công vào đây</p>
+    <input type="file" id="fileInputDetail" style="display: none;" accept=".doc,.docx,.xlsx,.xls,.txt,.pdf">
+  </div>
+  <div class="button-group">
+    <button type="button" onclick="hideAddForm()">Hủy</button>
+    <button type="submit" onclick="addSchedule()">Thêm</button>
+  </div>
+    </div>
+    <div id="detailForm">
+  <h3>Thông tin lịch phân công</h3>
+  <div class="tour-selection">
+    <label>Tên Tour:</label>
+    <div class="staff-input">
+      <input type="text" id="detailTenTour" readonly style="flex: 1; margin-right: 5px;">
+      <button type="button" onclick="showSelectTourForm()" style="background-color: #5E79E5; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Chọn Tour trong hệ thống</button>
+    </div>
+  </div>
+  <label>Mã lịch:</label>
+  <input type="text" id="detailMaLich">
+  <label>Ngày bắt đầu:</label>
+  <input type="date" id="detailNgayBatDau">
+  <label>Ngày kết thúc:</label>
+  <input type="date" id="detailNgayKetThuc">
+  <label>Số lượng nhân sự:</label>
+  <input type="number" id="detailSoLuongNhanSu" min="1">
+  <div style="display: flex; justify-content: space-between;">
+    <button type="submit" onclick="updateSchedule()">Cập nhật</button>
+    <div style="display: flex; gap: 10px;">
+      <button type="button" style="background-color: #E55E5E; color: white;" onclick="deleteSchedule()">Xóa</button>
+      <button type="button" style="background-color: #5E79E5; color: white;" onclick="hideDetailForm()">Đóng</button>
+    </div>
+  </div>
+</div>
+<div id="selectTourForm">
+  <h3>Chọn Tour</h3>
+  <table>
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="selectAllTour" onclick="toggleSelectAllTour()"></th>
+        <th>Mã Tour</th>
+        <th>Tên Tour</th>
+      </tr>
+    </thead>
+    <tbody id="tourListSelect">
+    </tbody>
+  </table>
+  <div class="button-group">
+    <button type="button" onclick="hideSelectTourForm()">Hủy</button>
+    <button type="submit" onclick="confirmSelectTour()">Xác nhận</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <script>
+    let scheduleData = [
+      { maLich: "LPC001", tenTour: "Du lịch Đà Lạt", ngayBatDau: "2025-07-15", ngayKetThuc: "2025-07-20", soLuongNhanSu: 5 },
+      { maLich: "LPC002", tenTour: "Du lịch Phú Quốc", ngayBatDau: "2025-07-20", ngayKetThuc: "2025-07-25", soLuongNhanSu: 3 }
+    ];
+
+    function showAlert(message, isSuccess) {
+      const alertBox = document.getElementById("alertBox");
+      const alertMessage = document.getElementById("alertMessage");
+      alertMessage.textContent = message;
+      alertBox.className = "notification " + (isSuccess ? "success" : "error");
+      alertBox.classList.remove("hidden");
+      setTimeout(() => alertBox.classList.add("hidden"), 3000);
+    }
+
+    function closeAlert() {
+      document.getElementById("alertBox").classList.add("hidden");
+    }
+
+    function showAddForm() {
+      document.getElementById("addForm").style.display = "block";
+      const dropZone = document.getElementById("dropZone");
+      dropZone.classList.remove("dragover");
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+      });
+      dropZone.addEventListener('drop', handleDrop, false);
+    }
+
+    function hideAddForm() {
+      document.getElementById("addForm").style.display = "none";
+    }
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function handleDrop(e) {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const fileNameDetail = document.getElementById("fileNameDetail");
+        fileNameDetail.textContent = files[0].name;
+        showAlert("File đã được kéo thả thành công", true);
+      }
+    }
+
+    function addSchedule() {
+      const maLich = `LPC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+      const fileNameDetail = document.getElementById("fileNameDetail").textContent;
+      if (fileNameDetail !== "Kéo thả file lịch phân công vào đây") {
+        scheduleData.push({ maLich, tenTour: fileNameDetail.split('.')[0], ngayBatDau: new Date().toISOString().split('T')[0], ngayKetThuc: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], soLuongNhanSu: 1 });
+        updateScheduleList();
+        hideAddForm();
+        showAlert("Thêm lịch phân công thành công", true);
+      } else {
+        showAlert("Vui lòng kéo thả file", false);
+      }
+    }
+
+    function showSelectTourForm() {
+      document.getElementById("selectTourForm").style.display = "block";
+      fetchTours();
+    }
+
+    function hideSelectTourForm() {
+      document.getElementById("selectTourForm").style.display = "none";
+      document.getElementById("tourListSelect").innerHTML = "";
+    }
+
+    function fetchTours() {
+      const tourData = [
+        { maTour: "T001", tenTour: "Du lịch Đà Lạt", ngayKhoiHanh: "2025-07-15" },
+        { maTour: "T002", tenTour: "Du lịch Phú Quốc", ngayKhoiHanh: "2025-07-20" }
+      ];
+      const tourListSelect = document.getElementById("tourListSelect");
+      tourListSelect.innerHTML = "";
+      tourData.forEach(tour => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="checkbox" name="tourSelect" value="${tour.maTour}" onclick="handleCheckboxClick(event)"></td>
+          <td>${tour.maTour}</td>
+          <td>${tour.tenTour}</td>
+        `;
+        tourListSelect.appendChild(tr);
+      });
+    }
+
+    function handleCheckboxClick(event) {
+      const checkboxes = document.getElementsByName("tourSelect");
+      checkboxes.forEach(checkbox => {
+        if (checkbox !== event.target) {
+          checkbox.checked = false;
+        }
+      });
+    }
+
+    function toggleSelectAllTour() {
+      const selectAll = document.getElementById("selectAllTour");
+      const checkboxes = document.getElementsByName("tourSelect");
+      if (selectAll.checked) {
+        let oneChecked = false;
+        checkboxes.forEach(checkbox => {
+          if (!oneChecked) {
+            checkbox.checked = true;
+            oneChecked = true;
+          } else {
+            checkbox.checked = false;
+          }
+        });
+      } else {
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false;
+        });
+      }
+    }
+
+    function confirmSelectTour() {
+      const checkboxes = document.getElementsByName("tourSelect");
+      let selectedTour = null;
+      checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+          if (selectedTour) {
+            showAlert("Chỉ được chọn 1 Tour", false);
+            return;
+          }
+          selectedTour = checkbox.parentElement.nextElementSibling.nextElementSibling.textContent; // Get Ten Tour
+        }
+      });
+      if (selectedTour) {
+        document.getElementById("detailTenTour").value = selectedTour;
+        hideSelectTourForm();
+        showAlert("Đã chọn Tour thành công", true);
+      } else {
+        showAlert("Vui lòng chọn một Tour", false);
+      }
+    }
+
+    function updateScheduleList() {
+      const scheduleList = document.getElementById("scheduleList");
+      scheduleList.innerHTML = "";
+      scheduleData.forEach(schedule => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${schedule.maLich}</td>
+          <td>${schedule.tenTour}</td>
+          <td>${schedule.ngayBatDau}</td>
+          <td>${schedule.ngayKetThuc}</td>
+          <td>${schedule.soLuongNhanSu}</td>
+        `;
+        row.onclick = () => showDetailForm(schedule);
+        scheduleList.appendChild(row);
+      });
+    }
+
+    function showDetailForm(schedule) {
+      document.getElementById("detailMaLich").value = schedule.maLich;
+      document.getElementById("detailTenTour").value = schedule.tenTour;
+      document.getElementById("detailNgayBatDau").value = schedule.ngayBatDau;
+      document.getElementById("detailNgayKetThuc").value = schedule.ngayKetThuc;
+      document.getElementById("detailSoLuongNhanSu").value = schedule.soLuongNhanSu;
+      document.getElementById("detailForm").style.display = "block";
+    }
+
+    function hideDetailForm() {
+      document.getElementById("detailForm").style.display = "none";
+    }
+
+    function updateSchedule() {
+      const maLich = document.getElementById("detailMaLich").value;
+      const index = scheduleData.findIndex(s => s.maLich === maLich);
+      if (index !== -1) {
+        scheduleData[index] = {
+          maLich: document.getElementById("detailMaLich").value,
+          tenTour: document.getElementById("detailTenTour").value,
+          ngayBatDau: document.getElementById("detailNgayBatDau").value,
+          ngayKetThuc: document.getElementById("detailNgayKetThuc").value,
+          soLuongNhanSu: parseInt(document.getElementById("detailSoLuongNhanSu").value)
+        };
+        updateScheduleList();
+        hideDetailForm();
+        showAlert("Cập nhật lịch phân công thành công", true);
+      } else {
+        showAlert("Cập nhật lịch phân công thất bại", false);
+      }
+    }
+
+    function deleteSchedule() {
+      const maLich = document.getElementById("detailMaLich").value;
+      const index = scheduleData.findIndex(s => s.maLich === maLich);
+      if (index !== -1) {
+        scheduleData.splice(index, 1);
+        updateScheduleList();
+        hideDetailForm();
+        showAlert("Xóa lịch phân công thành công", true);
+      } else {
+        showAlert("Xóa lịch phân công thất bại", false);
+      }
+    }
+
+    function deleteSelected() {
+      showAlert("Chức năng xóa nhiều chưa được triển khai", false);
+    }
+
+    function exportData() {
+      showAlert("Chức năng xuất dữ liệu chưa được triển khai", false);
+    }
+
+    function searchSchedule() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const filteredData = scheduleData.filter(schedule =>
+        schedule.maLich.toLowerCase().includes(searchTerm) ||
+        schedule.tenTour.toLowerCase().includes(searchTerm) ||
+        schedule.ngayBatDau.includes(searchTerm) ||
+        schedule.ngayKetThuc.includes(searchTerm) ||
+        schedule.soLuongNhanSu.toString().includes(searchTerm)
+      );
+      const scheduleList = document.getElementById("scheduleList");
+      scheduleList.innerHTML = "";
+      filteredData.forEach(schedule => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${schedule.maLich}</td>
+          <td>${schedule.tenTour}</td>
+          <td>${schedule.ngayBatDau}</td>
+          <td>${schedule.ngayKetThuc}</td>
+          <td>${schedule.soLuongNhanSu}</td>
+        `;
+        row.onclick = () => showDetailForm(schedule);
+        scheduleList.appendChild(row);
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        searchSchedule();
+      }
+    });
+
+    updateScheduleList();
+  </script>
+</body>
+</html>

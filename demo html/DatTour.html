@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý thông tin đặt Tour</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter';
+      font-size: 14px;
+      font-weight: regular;
+    }
+    body {
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .topbar {
+      background-color: #deb85f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      font-weight: regular;
+    }
+    .topbar .right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      position: relative;
+    }
+    .dropdown-toggle {
+      cursor: pointer;
+      position: relative;
+    }
+    .dropdown-toggle:hover #dropdownMenu {
+      display: flex;
+    }
+    .dropdown-menu {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background-color: white;
+      border: 1px solid #ccc;
+      width: 160px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    .dropdown-menu div {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .dropdown-menu div:hover {
+      background-color: #eee;
+    }
+    .container {
+      display: flex;
+    }
+    .sidebar {
+      width: 240px;
+      background-color: white;
+      height: calc(100vh - 50px);
+      padding-top: 10px;
+      border-right: 1px solid #ddd;
+    }
+    .sidebar .profile {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .sidebar .profile i {
+      font-size: 50px;
+    }
+    .sidebar .profile .name {
+      font-weight: bold;
+    }
+    .sidebar .profile .role {
+      font-size: 13px;
+      color: #666;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .menu-item:hover, .menu-item.active {
+      background-color: #eee;
+    }
+    .menu-item i {
+      margin-right: 10px;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+    .notification {
+      position: fixed;
+      top: 60px;
+      text-align: right;
+      right: 20px;
+      padding: 12px 12px;
+      font-weight: bold;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 9999;
+      animation: slideDown 0.5s ease-out;
+      max-width: 400px;
+    }
+    .notification.success {
+      background-color: #4caf50;
+      color: white;
+    }
+    .notification.error {
+      background-color: #e53935;
+      color: white;
+    }
+    .notification.hidden {
+      display: none;
+    }
+    .notification .close-btn {
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .dashboard {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background-color: white;
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card i {
+      background-color: #deb85f;
+      padding: 10px;
+      border-radius: 50%;
+      color: black;
+    }
+    .card .text {
+      font-size: 14px;
+    }
+    .card .text a {
+      font-weight: bold;
+      color: black;
+      text-decoration: none;
+    }
+    .card .text a:hover {
+      text-decoration: underline;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-gap: 20px;
+    }
+    .section {
+      border-radius: 4px;
+      padding: 10px 15px;
+      margin-bottom: 0px;
+    }
+    .section h3 {
+      padding: 10px;
+      margin: -10px -15px 10px -15px;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #addForm, #detailForm {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 700px;
+    }
+    #addForm h3, #detailForm h3 {
+      text-align: center;
+      background-color: #deb85f;
+      color: black;
+      margin: -20px -20px 20px -20px;
+      padding: 10px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    #addForm label, #detailForm label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    #addForm input, #addForm select, #detailForm input, #detailForm select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    #addForm input:disabled, #detailForm input:disabled {
+      background-color: #f0f0f0;
+      color: #666;
+    }
+    #addForm .staff-input, #detailForm .staff-input {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #addForm textarea, #detailForm textarea {
+      width: 100%;
+      height: 150px;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: none;
+    }
+    #addForm .drop-zone, #detailForm .drop-zone {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    #addForm .drop-zone.dragover, #detailForm .drop-zone.dragover {
+      background-color: #e0e0e0;
+      border-color: #999;
+    }
+    #addForm button, #detailForm button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #addForm .button-group, #detailForm .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #addForm button[type="submit"], #detailForm button[type="submit"] {
+      background-color: #5E79E5;
+      color: white;
+    }
+    #addForm button[type="button"], #detailForm button[type="button"] {
+      background-color: #E55E5E;
+      color: white;
+    }
+    #selectCustomerForm, #selectTourForm {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 700px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    #selectCustomerForm h3, #selectTourForm h3 {
+      text-align: center;
+      background-color: #deb85f;
+      color: black;
+      margin: -20px -20px 20px -20px;
+      padding: 10px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    #selectCustomerForm button, #selectTourForm button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #selectCustomerForm .button-group, #selectTourForm .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #selectCustomerForm button[type="button"], #selectTourForm button[type="button"] {
+      background-color: #E55E5E;
+      color: white;
+    }
+    #selectCustomerForm button[type="submit"], #selectTourForm button[type="submit"] {
+      background-color: #5E79E5;
+      color: white;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #ddd;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    table th {
+      background-color: #deb85f;
+    }
+    .search-bar {
+      display: flex;
+      width: 100%;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      padding: 5px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      height: 40px;
+    }
+    .search-bar button {
+      padding: 5px 10px;
+      background-color: #deb85f;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    @keyframes slideDown {
+      from { top: 20px; opacity: 0; }
+      to { top: 60px; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div><b>Hệ thống quản lý và phân công Tour</b></div>
+    <div class="right">
+      <div>Welcome back, <b>Đỗ Bạch Diễm Uyên</b></div>
+      <i class="material-icons">notifications</i>
+      <i class="material-icons">settings</i>
+      <div class="dropdown-toggle">
+        <i class="material-icons">account_circle</i>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <div onclick="alert('Xem nhật ký sử dụng')">Nhật ký sử dụng</div>
+          <div onclick="alert('Chuyển đến đổi mật khẩu')">Đổi mật khẩu</div>
+          <div onclick="alert('Đã đăng xuất');window.location.href='DangNhap.html'">Đăng xuất</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification hidden" id="alertBox">
+    <div style="display: flex; flex-direction: column;">
+      <div><b>Thông báo:</b></div>
+      <div id="alertMessage"></div>
+    </div>
+    <span class="close-btn" onclick="closeAlert()">×</span>
+  </div>
+
+  <div class="container">
+    <div class="sidebar">
+      <div class="profile">
+        <i class="material-icons">account_circle</i>
+        <div class="name">Đỗ Bạch Diễm Uyên</div>
+        <div class="role">Phòng Điều hành</div>
+      </div>
+      <div class="menu-item" onclick="window.location.href='TrangChu.html'"><i class="material-icons">home</i>Trang chủ</div>
+      <div class="menu-item" onclick="window.location.href='QuanLyTour.html'"><i class="material-icons">tour</i>Quản lý Tour</div>
+      <div class="menu-item active" onclick="window.location.href='DatTour.html'"><i class="material-icons">receipt</i>Quản lý thông tin đặt Tour</div>
+      <div class="menu-item" onclick="window.location.href='LichPhanCong.html'"><i class="material-icons">calendar_today</i>Quản lý lịch phân công</div>
+      <div class="menu-item" onclick="window.location.href='NhanSu.html'"><i class="material-icons">groups</i>Quản lý nhân sự</div>
+      <div class="menu-item" onclick="window.location.href='KhachHang.html'"><i class="material-icons">person</i>Quản lý khách hàng</div>
+      <div class="menu-item" onclick="window.location.href='ThamGiaTour.html'"><i class="material-icons">schedule</i>Đăng ký tham gia Tour</div>
+      <div class="menu-item" onclick="window.location.href='BaoCao.html'"><i class="material-icons">money</i>Báo cáo doanh thu</div>
+      <div class="menu-item" onclick="window.location.href='KhaoSat.html'"><i class="material-icons">poll</i>Quản lý khảo sát</div>
+      <div class="menu-item" onclick="window.location.href='HoatDong.html'"><i class="material-icons">event</i>Hoạt động và chương trình</div>
+    </div>
+
+    <div class="main">
+      <div class="section">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Tìm kiếm...">
+          <button class="search-icon" onclick="searchTourBooking()"><i class="material-icons">search</i></button>
+        </div>
+        <h3><span>Danh sách thông tin đặt Tour</span>
+          <button style="background-color: #5E79E5; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; height: 40px; width: 100px;" onclick="showAddForm()">+ Thêm</button>
+        </h3>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th>Mã đặt Tour</th>
+              <th>Khách hàng</th>
+              <th>Số lượng KH đặt</th>
+              <th>Ngày đặt</th>
+              <th>Ngày khởi hành</th>
+            </tr>
+          </thead>
+          <tbody id="tourBookingList">
+            <!-- Data will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="addForm">
+        <h3>Thêm thông tin đặt Tour</h3>
+        <label>Nhập thông tin khách hàng:</label>
+        <div class="staff-input">
+          <input type="text" id="khachHangInput" readonly style="flex: 1; margin-right: 5px;">
+          <button type="button" onclick="showSelectCustomerForm()" style="background-color: #5E79E5; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Chọn KH trong hệ thống</button>
+        </div>
+        <label>Số lượng KH đặt:</label>
+        <input type="number" id="soLuongKH" min="1" required>
+        <label>Mã đặt Tour:</label>
+        <input type="text" id="maDatTour" disabled>
+        <label>Ngày đặt:</label>
+        <input type="date" id="ngayDat" disabled>
+        <label>Nhập thông tin Tour:</label>
+        <div class="staff-input">
+          <input type="text" id="tourInput" readonly style="flex: 1; margin-right: 5px;">
+          <button type="button" onclick="showSelectTourForm()" style="background-color: #5E79E5; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Chọn Tour trong hệ thống</button>
+        </div>
+        <label>Ngày khởi hành:</label>
+        <input type="date" id="ngayKhoiHanh" required>
+        <label>Ghi chú:</label>
+        <textarea id="ghiChu"></textarea>
+        <div class="button-group">
+          <button type="button" onclick="hideAddForm()">Hủy</button>
+          <button type="submit" onclick="addTourBooking()">Thêm</button>
+        </div>
+      </div>
+
+      <div id="detailForm">
+        <h3>Thông tin đặt Tour</h3>
+        <label>Khách hàng:</label>
+        <div class="staff-input">
+          <input type="text" id="detailKhachHangInput" readonly style="flex: 1; margin-right: 5px;">
+          <button type="button" onclick="showSelectCustomerForm('detail')" style="background-color: #5E79E5; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Chọn KH</button>
+        </div>
+        <label>Số lượng KH đặt:</label>
+        <input type="number" id="detailSoLuongKH" min="1" required>
+        <label>Mã đặt Tour:</label>
+        <input type="text" id="detailMaDatTour" disabled>
+        <label>Ngày đặt:</label>
+        <input type="date" id="detailNgayDat" required>
+        <label>Tour:</label>
+        <div class="staff-input">
+          <input type="text" id="detailTourInput" readonly style="flex: 1; margin-right: 5px;">
+          <button type="button" onclick="showSelectTourForm('detail')" style="background-color: #5E79E5; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Chọn Tour</button>
+        </div>
+        <label>Ngày khởi hành:</label>
+        <input type="date" id="detailNgayKhoiHanh" required>
+        <label>Ghi chú:</label>
+        <textarea id="detailGhiChu"></textarea>
+        <div class="button-group" style="display: flex; justify-content: space-between;">
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" onclick="updateTourBooking()">Cập nhật</button>
+            <button type="button" style="background-color: #5E79E5; color: white;" onclick="exportInvoice()">Xuất hóa đơn</button>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" style="background-color: #E55E5E; color: white;" onclick="deleteTourBooking()">Xóa</button>
+            <button type="button" style="background-color: #5E79E5; color: white;" onclick="hideDetailForm()">Đóng</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="selectCustomerForm">
+        <h3>Chọn khách hàng</h3>
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAllCustomer" onclick="toggleSelectAll('customer')"></th>
+              <th>Mã KH</th>
+              <th>Họ và tên</th>
+            </tr>
+          </thead>
+          <tbody id="customerListSelect">
+          </tbody>
+        </table>
+        <div class="button-group">
+          <button type="button" onclick="hideSelectCustomerForm()">Hủy</button>
+          <button type="submit" onclick="confirmSelectCustomer()">Xác nhận</button>
+        </div>
+      </div>
+
+      <div id="selectTourForm">
+        <h3>Chọn Tour</h3>
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAllTour" onclick="toggleSelectAll('tour')"></th>
+              <th>Mã Tour</th>
+              <th>Tên Tour</th>
+            </tr>
+          </thead>
+          <tbody id="tourListSelect">
+          </tbody>
+        </table>
+        <div class="button-group">
+          <button type="button" onclick="hideSelectTourForm()">Hủy</button>
+          <button type="submit" onclick="confirmSelectTour()">Xác nhận</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Define data globally
+    let customerData = [
+      { maKhachHang: "KH001", hoTen: "Trần Văn B", sdt: "0987654321", email: "tranvanb@email.com", ngaySinh: "1990-03-15", cccd: "079205987654", diaChi: "Hà Nội" },
+      { maKhachHang: "KH002", hoTen: "Phạm Thị D", sdt: "0987654322", email: "phamthid@email.com", ngaySinh: "1992-04-20", cccd: "079205987655", diaChi: "TP.HCM" }
+    ];
+
+    let tourData = [
+      { maTour: "T001", tenTour: "Du lịch Đà Lạt", ngayKhoiHanh: "2025-07-15", diaDiem: "Đà Lạt", soTien: "5000000", donViTienTe: "VND", chiTietHoatDong: "Tham quan hồ Xuân Hương, chùa Linh Phước", chietKhau: 10, tinhTrang: "Chờ thanh toán" },
+      { maTour: "T002", tenTour: "Du lịch Phú Quốc", ngayKhoiHanh: "2025-07-20", diaDiem: "Phú Quốc", soTien: "1000", donViTienTe: "USD", chiTietHoatDong: "Tham quan bãi biển, chợ đêm", chietKhau: 5, tinhTrang: "Đã thanh toán" }
+    ];
+
+    let tourBookingData = [
+      { maDatTour: "8CPX7I", khachHang: "Trần Văn B", soLuongKH: 5, ngayDat: "2025-07-10", ngayKhoiHanh: "2025-07-15", tour: "Du lịch Đà Lạt", ghiChu: "Đặt sớm" },
+      { maDatTour: "FZLLOS", khachHang: "Phạm Thị D", soLuongKH: 2, ngayDat: "2025-07-12", ngayKhoiHanh: "2025-07-20", tour: "Du lịch Phú Quốc", ghiChu: "" }
+    ];
+
+    function showAlert(message, isSuccess) {
+      const alertBox = document.getElementById("alertBox");
+      const alertMessage = document.getElementById("alertMessage");
+      alertMessage.textContent = message;
+      alertBox.className = "notification " + (isSuccess ? "success" : "error");
+      alertBox.classList.remove("hidden");
+      setTimeout(() => alertBox.classList.add("hidden"), 3000);
+    }
+
+    function closeAlert() {
+      document.getElementById("alertBox").classList.add("hidden");
+    }
+
+    function showAddForm() {
+      document.getElementById("addForm").style.display = "block";
+      document.getElementById("maDatTour").value = generateRandomCode();
+      document.getElementById("khachHangInput").value = "";
+      document.getElementById("soLuongKH").value = "";
+      document.getElementById("ngayDat").value = "2025-07-13";
+      document.getElementById("tourInput").value = "";
+      document.getElementById("ngayKhoiHanh").value = "";
+      document.getElementById("ghiChu").value = "";
+    }
+
+    function hideAddForm() {
+      document.getElementById("addForm").style.display = "none";
+    }
+
+    function generateRandomCode() {
+      return Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    function addTourBooking() {
+      const maDatTour = document.getElementById("maDatTour").value;
+      const khachHang = document.getElementById("khachHangInput").value;
+      const soLuongKH = document.getElementById("soLuongKH").value;
+      const ngayDat = document.getElementById("ngayDat").value;
+      const tour = document.getElementById("tourInput").value;
+      const ngayKhoiHanh = document.getElementById("ngayKhoiHanh").value;
+      const ghiChu = document.getElementById("ghiChu").value;
+
+      if (maDatTour && khachHang && soLuongKH && ngayDat && tour && ngayKhoiHanh) {
+        if (tourBookingData.some(booking => booking.maDatTour === maDatTour)) {
+          showAlert("Mã đặt Tour đã tồn tại", false);
+        } else {
+          tourBookingData.push({ maDatTour, khachHang, soLuongKH, ngayDat, ngayKhoiHanh, tour, ghiChu });
+          updateTourBookingList();
+          hideAddForm();
+          showAlert("Thêm thông tin đặt Tour thành công", true);
+        }
+      } else {
+        showAlert("Thông tin thêm không hợp lệ", false);
+      }
+    }
+
+    function updateTourBookingList() {
+      const tourBookingList = document.getElementById("tourBookingList");
+      tourBookingList.innerHTML = "";
+      tourBookingData.forEach(booking => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${booking.maDatTour}</td>
+          <td>${booking.khachHang}</td>
+          <td>${booking.soLuongKH}</td>
+          <td>${booking.ngayDat}</td>
+          <td>${booking.ngayKhoiHanh}</td>
+        `;
+        row.onclick = () => showDetailForm(booking);
+        tourBookingList.appendChild(row);
+      });
+    }
+
+    function showDetailForm(booking) {
+      document.getElementById("detailForm").style.display = "block";
+      document.getElementById("detailMaDatTour").value = booking.maDatTour;
+      document.getElementById("detailKhachHangInput").value = booking.khachHang;
+      document.getElementById("detailSoLuongKH").value = booking.soLuongKH;
+      document.getElementById("detailNgayDat").value = booking.ngayDat;
+      document.getElementById("detailTourInput").value = booking.tour;
+      document.getElementById("detailNgayKhoiHanh").value = booking.ngayKhoiHanh;
+      document.getElementById("detailGhiChu").value = booking.ghiChu || "";
+    }
+
+    function hideDetailForm() {
+      document.getElementById("detailForm").style.display = "none";
+    }
+
+    function updateTourBooking() {
+      const maDatTour = document.getElementById("detailMaDatTour").value;
+      const index = tourBookingData.findIndex(b => b.maDatTour === maDatTour);
+      if (index !== -1) {
+        tourBookingData[index] = {
+          maDatTour: document.getElementById("detailMaDatTour").value,
+          khachHang: document.getElementById("detailKhachHangInput").value,
+          soLuongKH: document.getElementById("detailSoLuongKH").value,
+          ngayDat: document.getElementById("detailNgayDat").value,
+          tour: document.getElementById("detailTourInput").value,
+          ngayKhoiHanh: document.getElementById("detailNgayKhoiHanh").value,
+          ghiChu: document.getElementById("detailGhiChu").value
+        };
+        updateTourBookingList();
+        hideDetailForm();
+        showAlert("Cập nhật thông tin đặt Tour thành công", true);
+      } else {
+        showAlert("Cập nhật thông tin thất bại", false);
+      }
+    }
+
+    function deleteTourBooking() {
+      const maDatTour = document.getElementById("detailMaDatTour").value;
+      const index = tourBookingData.findIndex(b => b.maDatTour === maDatTour);
+      if (index !== -1) {
+        tourBookingData.splice(index, 1);
+        updateTourBookingList();
+        hideDetailForm();
+        showAlert("Xóa thông tin đặt Tour thành công", true);
+      } else {
+        showAlert("Xóa thông tin thất bại", false);
+      }
+    }
+
+    function searchTourBooking() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const filteredData = tourBookingData.filter(booking =>
+        booking.maDatTour.toLowerCase().includes(searchTerm) ||
+        booking.khachHang.toLowerCase().includes(searchTerm) ||
+        booking.soLuongKH.toString().includes(searchTerm) ||
+        booking.ngayDat.includes(searchTerm) ||
+        booking.ngayKhoiHanh.includes(searchTerm)
+      );
+      const tourBookingList = document.getElementById("tourBookingList");
+      tourBookingList.innerHTML = "";
+      filteredData.forEach(booking => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${booking.maDatTour}</td>
+          <td>${booking.khachHang}</td>
+          <td>${booking.soLuongKH}</td>
+          <td>${booking.ngayDat}</td>
+          <td>${booking.ngayKhoiHanh}</td>
+        `;
+        row.onclick = () => showDetailForm(booking);
+        tourBookingList.appendChild(row);
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        searchTourBooking();
+      }
+    });
+
+    function showSelectCustomerForm(formType = 'add') {
+      document.getElementById("selectCustomerForm").style.display = "block";
+      updateCustomerListSelect();
+      localStorage.setItem("currentFormType", formType);
+    }
+
+    function hideSelectCustomerForm() {
+      document.getElementById("selectCustomerForm").style.display = "none";
+    }
+
+    function updateCustomerListSelect() {
+      const customerListSelect = document.getElementById("customerListSelect");
+      customerListSelect.innerHTML = "";
+      customerData.forEach(customer => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="checkbox" name="customerCheckbox" value="${customer.maKhachHang}" onclick="handleCheckboxClick(event, 'customer')"></td>
+          <td>${customer.maKhachHang}</td>
+          <td>${customer.hoTen}</td>
+        `;
+        customerListSelect.appendChild(row);
+      });
+    }
+
+    function handleCheckboxClick(event, type) {
+      const checkboxes = document.getElementsByName(`${type}Checkbox`);
+      checkboxes.forEach(checkbox => {
+        if (checkbox !== event.target) {
+          checkbox.checked = false;
+        }
+      });
+    }
+
+    function toggleSelectAll(type) {
+      const selectAll = document.getElementById(`selectAll${type.charAt(0).toUpperCase() + type.slice(1)}`);
+      const checkboxes = document.getElementsByName(`${type}Checkbox`);
+      if (selectAll.checked) {
+        let oneChecked = false;
+        checkboxes.forEach(checkbox => {
+          if (!oneChecked) {
+            checkbox.checked = true;
+            oneChecked = true;
+          } else {
+            checkbox.checked = false;
+          }
+        });
+      } else {
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false;
+        });
+      }
+    }
+
+    function confirmSelectCustomer() {
+      const checkboxes = document.getElementsByName("customerCheckbox");
+      let selectedCustomer = null;
+      checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+          if (selectedCustomer) {
+            showAlert("Chỉ được chọn 1 khách hàng", false);
+            return;
+          }
+          const customer = customerData.find(c => c.maKhachHang === checkbox.value);
+          if (customer) selectedCustomer = customer.hoTen;
+        }
+      });
+      const formType = localStorage.getItem("currentFormType");
+      if (selectedCustomer) {
+        if (formType === "add") {
+          document.getElementById("khachHangInput").value = selectedCustomer;
+        } else if (formType === "detail") {
+          document.getElementById("detailKhachHangInput").value = selectedCustomer;
+        }
+        hideSelectCustomerForm();
+        showAlert("Đã chọn khách hàng thành công", true);
+      } else {
+        showAlert("Vui lòng chọn một khách hàng", false);
+      }
+    }
+
+    function showSelectTourForm(formType = 'add') {
+      document.getElementById("selectTourForm").style.display = "block";
+      updateTourListSelect();
+      localStorage.setItem("currentFormType", formType);
+    }
+
+    function hideSelectTourForm() {
+      document.getElementById("selectTourForm").style.display = "none";
+    }
+
+    function updateTourListSelect() {
+      const tourListSelect = document.getElementById("tourListSelect");
+      tourListSelect.innerHTML = "";
+      tourData.forEach(tour => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="checkbox" name="tourCheckbox" value="${tour.maTour}" onclick="handleCheckboxClick(event, 'tour')"></td>
+          <td>${tour.maTour}</td>
+          <td>${tour.tenTour}</td>
+        `;
+        tourListSelect.appendChild(row);
+      });
+    }
+
+    function confirmSelectTour() {
+      const checkboxes = document.getElementsByName("tourCheckbox");
+      let selectedTour = null;
+      checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+          if (selectedTour) {
+            showAlert("Chỉ được chọn 1 Tour", false);
+            return;
+          }
+          const tour = tourData.find(t => t.maTour === checkbox.value);
+          if (tour) selectedTour = tour.tenTour;
+        }
+      });
+      const formType = localStorage.getItem("currentFormType");
+      if (selectedTour) {
+        if (formType === "add") {
+          document.getElementById("tourInput").value = selectedTour;
+        } else if (formType === "detail") {
+          document.getElementById("detailTourInput").value = selectedTour;
+        }
+        hideSelectTourForm();
+        showAlert("Đã chọn Tour thành công", true);
+      } else {
+        showAlert("Vui lòng chọn một Tour", false);
+      }
+    }
+
+    function exportInvoice() {
+      const maDatTour = document.getElementById("detailMaDatTour").value;
+      const booking = tourBookingData.find(b => b.maDatTour === maDatTour);
+      if (booking) {
+        const invoiceContent = `
+          HÓA ĐƠN
+          Mã đặt Tour: ${booking.maDatTour}
+          Khách hàng: ${booking.khachHang}
+          Số lượng: ${booking.soLuongKH}
+          Ngày đặt: ${booking.ngayDat}
+          Tour: ${booking.tour}
+          Ngày khởi hành: ${booking.ngayKhoiHanh}
+          Ghi chú: ${booking.ghiChu || "Không có"}
+        `;
+        const win = window.open('', '', 'width=400,height=300');
+        win.document.write('<pre>' + invoiceContent + '</pre>');
+        win.document.close();
+        win.print();
+      } else {
+        showAlert("Vui lòng thêm thông tin trước khi xuất hóa đơn", false);
+      }
+    }
+
+    // Run initialization after DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      updateTourBookingList();
+    });
+  </script>
+</body>
+</html>
